@@ -1,0 +1,284 @@
+machine m0
+sees c0
+variables
+admin staff citizen registeredUser loggedInUser vaccineCentre vaccine buildingToBatch 
+batchDirectory vaccineStock freeCentreAppointments booking appointments offeredAppointments
+bookedAppointments rejectedAppointments nhsNumberDirectory info dataToSee viewData viewBooking batchNumber
+invariants  
+@inv1:registeredUser ⊆ USER  //all members are registered to the system
+@inv2:admin ⊆ registeredUser  //an administrator is able to create vaccine centres, register other users as staff or admin and has other roles
+@inv3:staff ⊆ registeredUser //a registered user that is able to see a citizens information and update stock
+@inv4:citizen ⊆ registeredUser // the lowest in the hierchy of admin staff and citizen, doesnt have many roles. Can log in and book an appointment
+@inv5:loggedInUser ⊆ registeredUser // a registered user that is able to interact with the system
+@inv6:admin ∩ staff = ∅ // a user cant be both admin and staff
+@inv7:citizen ∩ staff = ∅ //a user cant be both citizen and staff
+@inv8:admin ∩ citizen = ∅ // a user can not be both admin and citizen
+@inv9:vaccineCentre ⊆ BUILDING  // a vaccine centre is of type BUILDING and is its subset
+@inv10:vaccine ⊆ VACCINE //vaccine is the object of type VACCINE
+@inv12:buildingToBatch ∈ BUILDING ↔ BATCHNUMBER   //the relationship between building and batch number, a batch number of a vaccine depends on where it is produced
+@inv13:batchDirectory ∈ BATCHNUMBER ↔ VACCINE  //the relationship between batchnumber and vaccine, every vaccine has a batch number identifying it.
+@inv14:vaccineStock ⊆ VACCINE  //vaccinestock is a subset of the carrier set, any vaccines in this subset are described to be in stock.
+@inv15:booking ⊆ loggedInUser // for a user to be in this subset it is said to be in the process of booking an appointment
+@inv16:appointments ∈ vaccineCentre ↔ DATE  // the relationship between vaccinecentre and date, every apointment must have a location and date.
+@inv17:freeCentreAppointments ⊆ appointments //any appointment in this subset is said to be available for any user/citizen in the booking process.
+@inv18:offeredAppointments ⊆ appointments //during the booking process an appointment that is offered is reserved so multiple users can not be offered the same appointment
+@inv19:bookedAppointments ∈ citizen ↔ appointments //a booked appointment t=is the relationship between citizen and appointment, you can identify a citizens booked apointments with this
+@inv20:rejectedAppointments ∈ citizen ↔ appointments // the relationship between a citizen and appointments, if they reject an appointment it appears ini this set related to the citizen. this means other citizens can still book this appointment how ever it wont be an option for this citizen
+@inv21:freeCentreAppointments ∩ offeredAppointments = ∅ // an appointment can not be both available and reserved
+@inv22:dataToSee ⊆ CERTIFICATE  //any information the staff may see about the citizen
+@inv23:nhsNumberDirectory ∈ citizen ↔ NHS_NUMBER  // the relationship allows you to identify a citizens id
+@inv24:info ∈ NHS_NUMBER ↔ CERTIFICATE  //the relationship allows you to access the information via the id
+@inv25:viewData ∈ staff ↔ citizen //a staff will know their citizen, by this they see the nhs number and so they can access the data to see
+@inv26:viewBooking ⊆ appointments 
+@inv27:batchNumber ⊆ BATCHNUMBER
+
+events
+event INITIALISATION
+begin
+// the initialisation of any variables as empty sets
+@init-registeredUser:registeredUser ≔ ∅
+
+//maybe initialise as 1?
+@init-admin:admin ≔ ∅
+
+@init-staff:staff ≔ ∅
+@init-citizen:citizen ≔ ∅
+@init-loggedInUser:loggedInUser ≔ ∅
+@init-vaccineCentre:vaccineCentre ≔ ∅ 
+@init-batchDirectory:batchDirectory ≔ ∅
+@init-vaccine:vaccine ≔ ∅
+@init-vaccineStock:vaccineStock ≔ ∅
+@init-buildingToBatch:buildingToBatch ≔ ∅
+@init-booking: booking ≔ ∅
+@init-freeAppointments:freeCentreAppointments ≔ ∅
+@init-appointments:appointments ≔ ∅
+@init-offered:offeredAppointments ≔ ∅
+@init-booked:bookedAppointments ≔ ∅
+@init-rejected:rejectedAppointments ≔ ∅
+@init-dataToSee:dataToSee ≔ ∅
+@init-nhsNumberDirectory:nhsNumberDirectory ≔ ∅
+@init-info:info ≔ ∅
+@init-viewData:viewData ≔ ∅
+@init-viewBooking:viewBooking ≔ ∅
+@init-batchNumber:batchNumber ≔ ∅
+end
+
+//first user to register becomes admin
+event RegisterRootAdmin
+any u
+where
+@grd1: u ∈ USER          
+@grd2: registeredUser = ∅                       
+then
+@act1: registeredUser ≔ registeredUser ∪ {u}   
+@act2: admin ≔ admin ∪ {u}    
+end
+
+//An administrator to register another administrator to the system.
+event registerAdmin
+any x y 
+where 
+@grd1:x ∈ admin
+@grd2:y ∉ registeredUser
+@grd3: x ∈ loggedInUser
+then 
+@act1:registeredUser ≔ registeredUser ∪ {y}
+@act2:admin ≔ admin ∪ {y}
+end
+
+//An adminstrator to register a staff to the system
+event registerStaff
+any x y
+where
+@grd1:x ∈ admin
+@grd2:y ∉ registeredUser
+@grd3: y ∈ USER
+@grd4: x ∈ loggedInUser
+then 
+@act1:registeredUser ≔ registeredUser ∪ {y}
+@act2:staff ≔ staff ∪ {y}
+end
+
+// A citizen registers to the system
+event registerCitizen
+any c a
+where
+@grd1:c ∉ registeredUser
+@grd2: c ∈ USER
+@grd3: a ∈  admin
+then
+@act1:registeredUser ≔ registeredUser ∪ {c}
+@act2:citizen ≔ citizen ∪ {c}
+end
+
+//A user logs in into the system
+event logIn
+any u 
+where
+@grd1:u ∈ registeredUser
+@grd2: u ∉ loggedInUser
+then
+@act1:loggedInUser ≔ loggedInUser ∪ {u}
+end
+
+//An administrator adds a vaccination centre
+event addVaccineCentre
+any a b
+where  
+@grd1:a ∈ admin
+@grd2:b ∈ BUILDING
+@grd3: a ∈ loggedInUser
+@grd4: b ∉ vaccineCentre
+then
+@act1:vaccineCentre ≔ vaccineCentre ∪ {b}
+end
+//event to make a vaccine and its batchnumber
+event createBatch
+any v b a
+where
+@grd1: b  ∈ BATCHNUMBER
+@grd2: v ∈ VACCINE
+@grd3: a ∈ admin
+@grd4: a ∈ loggedInUser
+then 
+@act1: batchNumber ≔ batchNumber ∪ {b} 
+@act2: vaccine ≔ vaccine ∪ {v} 
+end
+
+//An administrator updates vaccine stock (by adding vaccine batches)
+event updateVaccineStock
+any a v x b
+where
+@grd1:a ∈ admin
+@grd2:a ∈ loggedInUser
+@grd3:v ∈ vaccineCentre
+@grd4:b ∈ BATCHNUMBER
+@grd5:x ∈ vaccine
+
+then
+@act1:batchDirectory ≔ batchDirectory ∪ {b ↦ x}
+@act2:buildingToBatch ≔ buildingToBatch ∪ {v ↦ b}
+@act3:vaccineStock ≔ vaccineStock ∪ batchDirectory[buildingToBatch[{v}]]
+end
+
+//Admin creates appointment
+event adminCreatedAppointment
+any a b d
+where
+@grd1:a ∈ admin
+@grd2:a ∈ loggedInUser
+@grd3:b  ∈ vaccineCentre
+@grd4:d ∈ DATE
+//@grd5: offeredAppointments  ∩ {b ↦ d}  ∈ ∅
+then
+@act1: freeCentreAppointments ≔  freeCentreAppointments ∪ {b ↦ d}
+end
+
+//A citizen starts a booking and is offered an appointment
+event startBooking
+any a c 
+where 
+@grd1:a ∈ freeCentreAppointments
+@grd2:c ∈ citizen
+@grd5:rejectedAppointments∼[{a}] = ∅
+@grd6: c ∈ loggedInUser
+then 
+@act1:freeCentreAppointments ≔ freeCentreAppointments ∖ {a}
+@act2:offeredAppointments ≔ offeredAppointments ∪ {a}
+@act3: booking ≔ booking ∪ {c}
+end
+
+//A citizen accepts the offer for an appointment
+event acceptBooking 
+any a c
+where 
+@grd1:c ∈ booking 
+@grd2:c ∈ citizen 
+@grd3:a ∈ offeredAppointments
+then 
+@act1:offeredAppointments ≔ offeredAppointments ∖ {a}
+@act2:bookedAppointments ≔ bookedAppointments ∪ {c ↦ a}
+@act3:booking ≔ booking ∖ {c}
+end
+
+//A citizen stops the current booking process
+event stopBooking
+any a c
+where
+@grd1:c ∈ booking 
+@grd2:c ∈ citizen 
+@grd3:a ∈ offeredAppointments
+then
+@act1:offeredAppointments ≔ offeredAppointments ∖ {a}
+@act2:freeCentreAppointments ≔ freeCentreAppointments ∪ {a}
+@act3:booking ≔ booking ∖ {c}
+end
+
+//A citizen rejects the offer for an appointment and get a new offer.
+event rejectBookingAndGetNextAppointment
+any c a b
+where
+@grd1:c ∈ booking 
+@grd2:c ∈ citizen 
+@grd3:a ∈ offeredAppointments
+@grd4:b ∈ freeCentreAppointments
+@grd5:rejectedAppointments∼[{b}] = ∅
+then
+@act1:offeredAppointments ≔ (offeredAppointments ∖ {a}) ∪ {b}
+@act2:freeCentreAppointments ≔ (freeCentreAppointments ∪ {a} ) ∖ {b}
+@act3:rejectedAppointments ≔ rejectedAppointments ∪ {c ↦ a}
+end
+
+//A citizen rejects the offer and the system aborts since there are no more appointment
+event rejectBookingNoNextAppointment
+any a c
+where
+@grd1:c ∈ booking 
+@grd2:c ∈ citizen 
+@grd3:a ∈ offeredAppointments
+@grd4:freeCentreAppointments ∖ rejectedAppointments[{c}] = ∅
+then
+@act1:offeredAppointments ≔ offeredAppointments ∖ {a}
+@act2:freeCentreAppointments ≔ freeCentreAppointments ∪ {a}
+@act3:booking ≔ booking ∖ {c}
+@act4:rejectedAppointments ≔ rejectedAppointments ∪ {c ↦ a}
+end
+
+//A citizen starts a re-booking and is offered a new appointment.
+event rebooking
+any c a b
+where 
+@grd0:c ∈ booking 
+@grd1:c ∈ citizen 
+@grd3:a ∈ bookedAppointments[{c}]
+@grd4:b ∈ freeCentreAppointments
+@grd5:rejectedAppointments∼[{b}] = ∅
+then 
+@act1:bookedAppointments ≔ bookedAppointments ∖ {c ↦ a}
+@act2:rejectedAppointments ≔ rejectedAppointments ∪ {c ↦ a}
+end
+
+//An administrator or a staff can view a citizen details using their NHS number.
+event administratorViewing
+any u c n a
+where
+@grd1:u ∈ {staff ∪ admin}
+@grd2:c ∈ citizen
+@grd3:c ∈ loggedInUser
+@grd4:n ∈ NHS_NUMBER
+@grd5: a ∈ bookedAppointments[{c}] 
+then
+@act1:dataToSee ≔ dataToSee ∪ info[nhsNumberDirectory[viewData[u]]]
+end
+
+// A citizen views their current booking
+event citizenViewsBooking
+any c a
+where 
+@grd1:c ∈ citizen
+@grd2:c ∈ loggedInUser
+@grd3: a ∈ bookedAppointments[{c}] 
+then
+@act1:viewBooking ≔ viewBooking ∪ bookedAppointments[{c}]
+end
+ end

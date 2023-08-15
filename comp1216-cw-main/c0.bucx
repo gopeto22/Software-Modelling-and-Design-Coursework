@@ -1,0 +1,12 @@
+context c0
+sets
+PEOPLE BUILDING USER REGISTERED_USERS PASSWORD VACCINE VACCINE_CENTRES APPOINTMENTS BOOKINGS CERTIFICATE DATE
+constants
+ALLOWED_SHOTS 
+date
+centreAppointments
+axioms
+@axm1:ALLOWED_SHOTS ∈ 0‥3 
+@axm2:centreAppointments ∈ APPOINTMENTS
+@axm3:date ∈ ℕ
+end

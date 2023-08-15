@@ -1,0 +1,211 @@
+machine m0
+sees c0
+variables  
+
+citizen admin staff vaccineCentre notVaccineCentre registeredUser notRegisteredUser batchNumber   
+activeUser notActiveUser names NHSNumbers receivedCertificates vaccineBrand vaccineDate freeCentreAppointments  
+receivedShots lastShot stockInCentre newStock startBooking booking rejectedBooking currentDate people 
+bookedCentreAppointments earliestAppointment centresToSearch userPassword user vaccinesInBatch appointments dailyAppointments  
+invariants  
+@inv0: people ⊆ USER 
+@inv1:citizen ⊆ people  
+@inv2:admin ⊆ people   
+@inv3:staff ⊆ people   
+//@inv4: admin ∩ citizen = ∅   
+//@inv5: admin ∩ staff = ∅    
+//@inv6: staff ∩ citizen = ∅ 
+@inv4:citizen = (people ∖ admin) ∖ staff  
+@inv5:admin = (people ∖ citizen) ∖ staff  
+@inv6:staff = (people ∖ citizen) ∖ admin	  
+
+//@inv7:vaccineCentre ⊆ BUILDING   
+@inv39:vaccineCentre ⊆ VACCINE_CENTRES
+//@inv8:notVaccineCentre ⊆ BUILDING  
+//@inv9:notVaccineCentre = BUILDING ∖ vaccineCentre  
+//@inv10:vaccineCentre = BUILDING ∖ notVaccineCentre  
+
+@inv11:registeredUser ⊆ USER  
+@inv12:notRegisteredUser ⊆ USER  
+//@inv13:registeredUser ∩ notRegisteredUser =  ∅  
+//@inv14:registeredUser ∪ notRegisteredUser = user  
+@inv13:registeredUser = USER ∖ notRegisteredUser  
+@inv14:notRegisteredUser = (USER ∖ registeredUser) ∖ activeUser  
+
+@inv15:activeUser ⊆ USER  
+@inv16:notActiveUser ⊆ USER  
+//@inv17:activeUser ∩ notActiveUser =  ∅  
+//@inv18:activeUser ∪ notActiveUser = user  
+@inv17:activeUser = (USER ∖ notActiveUser) ∖ notRegisteredUser   
+@inv18:notActiveUser = USER ∖ activeUser  
+
+@inv19:names ⊆ citizen 
+@inv20:NHSNumbers ⊆ citizen  
+
+@inv21:batchNumber ⊆ VACCINE  
+@inv23:vaccinesInBatch ⊆ batchNumber  
+@inv22:vaccineBrand ⊆ batchNumber  
+
+//@inv23:vaccineDate ≔ VACCINE ⇸ date     
+@inv24:receivedShots ⊆ citizen  
+@inv25:lastShot ⊆ citizen    
+@inv26:stockInCentre ∈ vaccineCentre → VACCINE  
+
+//@inv27:newStock ∉ stockInCentre  
+@inv27:appointments ⊆ APPOINTMENTS  
+@inv28:newStock ∈ admin → stockInCentre  
+//@inv29:numberOfAppointments ⊆ ℕ
+
+@inv30:booking ⊆ BOOKINGS  
+@inv32:startBooking ⊆ BOOKINGS
+
+@inv33:currentDate ⊆ DATE  
+@inv31:dailyAppointments ∈ (VACCINE_CENTRES × DATE) → ℕ
+//@inv37:bookedCentreAppointments ⊆ APPOINTMENTS
+@inv34:bookedCentreAppointments ∈ vaccineCentre → APPOINTMENTS
+//@inv35: ∀ v1,v2 · v1 ∈ vaccineCentre ∧ v2 ∈ vaccineCentre ∧   
+//v1 ≠ v2 ∧ bookedCentreAppointments(v1) ≠ bookedCentreAppointments(v2)   
+//@inv36:bookedCentreAppointments ≔ vaccineCentre → DATE  
+//@inv37:freeCentreAppointments ∈ vaccineCentre → appointments  
+//@inv38:bookedCentreAppointments ∩ freeCentreAppointments =  ∅  
+//@inv40:bookedCentreAppointments ∪ freeCentreAppointments = {numberOfAppointments}  
+//@inv39:freeCentreAppointments ⊆ appointments
+@inv35:freeCentreAppointments ∈ (vaccineCentre → APPOINTMENTS) ∖ {bookedCentreAppointments}
+@inv36:bookedCentreAppointments ∩ freeCentreAppointments =  ∅ 
+@inv38:{freeCentreAppointments ∪ bookedCentreAppointments} = vaccineCentre → APPOINTMENTS
+//@inv39:earliestAppointment ⊆ APPOINTMENTS  
+//@inv40:freeCentreAppointments ≔ vaccinationCentre → min(ran(FreeCentreAppointments))  
+@inv40:earliestAppointment ∈ max(ran({VACCINE_CENTRES → freeCentreAppointments}))
+//@inv41:finite(ran(receivedShots))  
+@inv42:finite(ran(freeCentreAppointments))
+//@inv43:booking = freeAppointments → startBooking  
+//@inv44:userPassword ∈ user → PASSWORD  
+events
+event INITIALISATION
+begin
+@init-citizen: citizen ≔ ∅  
+@init-admin: admin ≔ ∅  
+@init-staff: staff ≔ ∅
+@init-vaccineCentre: vaccineCentre ≔ ∅
+//@init-notVaccineCentre: notVaccineCentre ≔ ∅
+@init-registeredUser: registeredUser ≔ ∅
+@init-notRegisteredUser: notRegisteredUser ≔ ∅
+@init-activeUser: activeUser ≔ ∅
+@init-notActiveUser: notActiveUser ≔ ∅
+@init-names: names ≔ ∅
+@init-NHSNumbers: NHSNumbers ≔ ∅
+//@init-receivedCertificates: receivedCertificates ≔ ∅  
+@init-batchNumber: batchNumber ≔ ∅
+@init-vaccineBrand: vaccineBrand ≔ ∅
+@init-receivedShots: receivedShots ≔ ∅
+@init-lastShot: lastShot ≔ ∅
+@init-stockInCentre: stockInCentre ≔ ∅
+@init-newStock: newStock ≔ ∅
+@init-startBooking: startBooking ≔ ∅
+@init-booking: booking ≔ ∅
+@init-appointments: appointments ≔ {centreAppointments}
+@init-numberOfAppointments:numberOfAppointments ≔ 0
+//@init-dailyCentreAppointments: dailyCentreAppointments ≔ ∅  
+@init-bookedCentreAppointments: bookedCentreAppointments ≔ ∅
+@init-freeAppointments:freeCentreAppointments ≔  ∅
+//@init-earliestAppointment: earliestAppointment ≔ ∅  
+//@init-centresToSearch: centresToSearch ≔ ∅  
+//@init-userPass: userPassword ≔ ∅  
+//@init-people: user ≔ ∅  
+end
+event registerAdmin  
+any   
+x y p
+where   
+@grd1: x ∈ admin  
+@grd2: x ∈ activeUser  
+@grd3: y ∉ registeredUser  
+@grd4: p ∈ PASSWORD  
+then  
+@act1:registeredUser ≔ registeredUser ∪ {y}  
+@act2:notRegisteredUser ≔ notRegisteredUser ∖ {y}  
+@act3:admin ≔ admin ∪ {y}  
+//@act4:userPassword ≔ userPassword ∪ {y ↦ p}  
+//@act5:PASSWORD ≔ PASSWORD ∪ {p} 
+end
+event registerStaff
+any
+x y p
+where
+@grd1:x ∈ admin
+@grd2:x ∈ activeUser
+@grd3:y ∉ registeredUser
+@grd4:y ∈ staff
+@grd5: p ∈ PASSWORD
+then
+@act1:registeredUser ≔ registeredUser ∪ {y}
+@act2:notRegisteredUser ≔ notRegisteredUser ∖ {y}
+//@act3:userPassword ≔ userPassword ∪ {y ↦ p}  
+//@act4:PASSWORD ≔ PASSWORD ∪ {p}  
+end
+event citizenRegister
+any x p
+where
+@grd1:x ∈ citizen
+@grd2:x ∉ registeredUser
+@grd3: p ∈ PASSWORD
+then
+@act1:registeredUser ≔ registeredUser ∪ {x}
+@act2:notRegisteredUser ≔ notRegisteredUser ∖ {x}
+//@act3:userPassword ≔ userPassword ∪ {x ↦ p}  
+//@act4:PASSWORD ≔ PASSWORD ∪ {p}  
+end
+event logIn  
+any x k  
+where  
+@grd1:x ∈ notActiveUser 
+@grd2:x ∈ people 
+@grd4:k ∈ PASSWORD  
+then 
+@act1:activeUser ≔ activeUser ∪ {x}  
+@act2:notActiveUser ≔ notActiveUser ∖ {x}  
+//@act3:userPassword ≔ {x ↦ k}  
+end  
+event addCentre  
+any x y
+where
+@grd1: x ∈ admin
+@grd2: x ∈ activeUser
+@grd3: y ∉ vaccineCentre
+then
+@act1:vaccineCentre ≔ vaccineCentre ∪ {y}
+//@act2:notVaccineCentre ≔ notVaccineCentre ∖ {y}
+end
+event updateVaccineStock
+any x y z b
+where
+@grd1:x ∈ vaccineCentre
+@grd2:z ∈ stockInCentre
+@grd3:y ∈ admin
+@grd4:y ∈ activeUser
+@grd5:b ∈ batchNumber
+then
+@act1: stockInCentre ≔ stockInCentre ∪ {x ↦ b}
+end
+/* 
+
+event startBooking   
+any x d l s e b f   
+where
+@grd1:x ∈ receivedShots
+@grd2:x < ALLOWED_SHOTS  
+@grd3:d ∈ DATE  
+@grd4:d > 28  
+@grd5:l ∈ lastShot  
+@grd6:l ∈ ran(x)  
+@grd7:x ≠ ∅ ⇒ l > min(x) → d   
+@grd8:s ∈ startBooking  
+@grd9:s ≔ citizen → {l ∪ x}
+@grd10:e ∈ earliestAppointment  
+@grd11:f ∈ freeCentreAppointments  
+@grd12:f ≠ ∅ ⇒ e > min(ran(f)) 
+then  
+@act1:b ≔ e → s  
+
+end  
+*/
+  end

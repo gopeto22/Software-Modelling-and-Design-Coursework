@@ -1,0 +1,110 @@
+machine AppointmentManagement
+refines VaccinationCenters
+sees AppointmentManagementContext
+
+/*AppointmentManagementContext
+ * TO DO:
+ * REQ 18 A vaccination centre maintains a list of booked appointments
+ * REQ 19 A citizen can only book an appointment if they have received less than 3 shots
+ * REQ 20 A citizen can only book an appointment if their last shot was more than 28 days
+ * (4 weeks) from the date of login
+ * REQ 21 A citizen is offered the earliest available appointment at any centre
+ * REQ 22 If the citizen rejects the current offer, the system offers the following earliest
+ * appointment, that might be at a different centre
+ * REQ 23 If the citizen accepts the current offer, the booking is confirmed
+ * REQ 24 At any point during the booking process, the use can abandon the system 
+ * without completing the booking
+ * REQ 25 The booking is stopped if there are no more available appointments within the 
+ * 14 days from the date of login to offer
+ * REQ 26 A citizen can view their current booking (if any).
+ * REQ 27 Rebooking an appointment can be done up to 1 day before the date of the original one
+ * REQ 28 Rebooking follows the same rules as booking
+ * REQ 29 After re-booking is confirmed, the original appointmnet becomes available
+ */
+
+variables
+	users
+	admins
+	staff
+	login
+	register
+	vaccines
+	centers
+	center_stock
+	center_vaccines
+	day
+	citizen_names
+	nhs_numbers
+	certificates
+	appointments_nr
+	citizen_name
+	vaccines_count
+	citizen_certs
+	certificate_vaccines
+	certificate_dates
+	
+events
+	event INITIALISATION extends INITIALISATION
+	end
+
+	event NextDay extends NextDay
+	end
+
+	event IssueCertificate extends IssueCertificate
+	end
+
+	event GetCitizenName extends GetCitizenName
+	end
+
+	event GetCitizenCertificatesUser extends GetCitizenCertificatesUser
+	end
+
+	event GetCitizenCertificatesNHS extends GetCitizenCertificatesNHS
+	end
+
+	event AddVaccine extends AddVaccine
+	end
+
+	event AddCenter extends AddCenter
+	end
+
+	event ChangeCenterAppointCount extends ChangeCenterAppointCount
+	end
+
+	event AssignBatchToCenter extends AssignBatchToCenter
+	end
+
+	event ShowCenterStock extends ShowCenterStock
+	end
+
+	event InitRootUser extends InitRootUser
+	end
+
+	event LoginUser extends LoginUser
+	end
+
+	event LogoutUser extends LogoutUser
+	end
+
+	event RegisterUser extends RegisterUser
+	end
+
+	event ChangeUserPassword extends ChangeUserPassword
+	end
+
+	event ChangeStaffPassword extends ChangeStaffPassword
+	end
+
+	event ChangeAdminPassword extends ChangeAdminPassword
+	end
+
+	event ElevateUserStaff extends ElevateUserStaff
+	end
+
+	event ElevateUserAdmin extends ElevateUserAdmin
+	end
+
+	event ElevateStaffAdmin extends ElevateStaffAdmin
+	end
+
+end

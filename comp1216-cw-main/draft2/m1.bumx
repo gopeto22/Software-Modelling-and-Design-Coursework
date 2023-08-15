@@ -1,0 +1,65 @@
+machine m1 	
+	refines	m0 
+	sees c0 
+	variables
+	admin staff citizen registeredUser loggedInUser vaccineCentre vaccine buildingToBatch  passwordDirectory
+batchDirectory vaccineStock freeCentreAppointments booking appointments offeredAppointments
+bookedAppointments rejectedAppointments nhsNumberDirectory info dataToSee viewData viewBooking batchNumber
+invariants
+
+	@inv11:passwordDirectory ∈ USER ↔ PASSWORD
+	events
+	
+		event INITIALISATION 
+		extends INITIALISATION
+		begin
+		@init-passwordDirectory:passwordDirectory ≔ ∅ 
+		end
+
+	   event RegisterRootAdmin extends RegisterRootAdmin
+			any  p where
+			@grd3: p ∈ PASSWORD           
+		then
+		@act4: passwordDirectory ≔ passwordDirectory ∪ {u↦p}  
+		end
+		
+		//An administrator to register another administrator to the system
+		event registerAdmin extends registerAdmin
+		any p
+		where
+		@grd4:p ∈ PASSWORD
+		then 
+		@act3:passwordDirectory ≔ passwordDirectory ∪ {y ↦ p}
+		end
+		
+		// An administrator to register a staff to the system.
+		
+		event registerStaff extends registerStaff
+		any p
+		where
+		@grd5:p ∈ PASSWORD
+		then 
+		@act3:passwordDirectory ≔ passwordDirectory ∪ {y ↦ p}
+		end
+		
+		//A citizen registers to the system.
+		event registerCitizen extends registerCitizen
+		any p
+		where
+		@grd4:p ∈ PASSWORD
+		then
+		@act3:passwordDirectory ≔ passwordDirectory ∪ {c ↦ p}
+		end
+		
+		//A user logs in into the system
+		event logIn 
+		extends logIn
+		any p
+		where
+		@grd3:p = passwordDirectory[{u}]
+		end
+		
+		event addVaccineCentre extends addVaccineCentre
+		end
+		
+		end

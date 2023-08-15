@@ -1,0 +1,13 @@
+context c0
+sets 
+//USER represents how the system sees a person
+USER 
+//a building can become registered as a vaccinsation centre
+BUILDING
+//the vaccination object representing the jab which has it's own attributes such as batch number, brand etc
+VACCINE 
+//What enables a user to login if it's member matches the relational image of logging in on user
+PASSWORD 
+//attribute related to vaccine
+BATCHNUMBER DATE NHS_NUMBER CERTIFICATE
+end

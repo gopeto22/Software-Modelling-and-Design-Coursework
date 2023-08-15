@@ -1,0 +1,142 @@
+machine m1
+refines m0
+sees c0
+events 
+event acceptBooking
+	extends startBooking
+	then
+	@act1:BOOKINGS ≔ BOOKINGS ∪ {b}
+	@act2:APPOINTMENTS ≔ APPOINTMENTS ∪ {e}
+	@act3:dailyCentreAppointments ≔ dailyCentreAppointments ∖ {e}
+	@act4:bookedCentreAppointments ≔ bookedCentreAppointments ∪ {e}
+	@act5:f ≔ f ∖ {e}
+	end
+	event stopBooking
+	extends startBooking
+	then
+	@act1:BOOKINGS ≔ BOOKINGS ∖ {b}
+	end
+	event rejectAppointment
+	extends startBooking
+	any n
+	where 
+	@grd1: n ∈ earliestAppointment
+	@grd2:n ≔ {e} ⩤ earliestAppointment
+	then
+	@act1: booking(n) ≔ s
+	end
+	event failRejectAppointment 
+
+extends startBooking 
+
+where  
+
+@grd1:earliestAppointment = ∅ 
+
+then 
+
+@act1:BOOKINGS ≔ BOOKINGS ∖ {b} 
+
+end 
+
+event rebookAppointment 
+
+extends startBooking 
+
+any n  
+
+where  
+
+@grd1:n ∈   BOOKINGS 
+
+@grd2:x ∈ receivedShots 
+
+@grd3:d ∈ DATE 
+
+@grd4:d > 28 
+
+@grd5:l ∈ lastShot 
+
+@grd6:l ∈ ran(x) 
+
+@grd7:x ≠ ∅ ⇒ l > min(x) → d  
+
+@grd8:s ∈ startBooking 
+
+@grd9:s ≔ citizen → {l ∪ x} 
+
+@grd10:e ∈ earliestAppointment 
+
+@grd11:f ∈ freeCentreAppointments 
+
+@grd12:f ≠ ∅ ⇒ e > min(ran(f)) 
+
+then 
+
+@act1:b ≔ e → s 
+
+@act2:BOOKINGS ≔ BOOKINGS ∖ {n} 
+
+@act3:APPOINTMENTS ≔ APPOINTMENTS ∖ {n} 
+
+@act4:dailyCentreAppointments ≔ dailyCentreAppointments ∪ {e} 
+
+@act5:bookedCentreAppointments ≔ bookedCentreAppointments ∖ {e} 
+
+end 
+
+event updateAfterVaccination 
+
+any x n c b d 
+
+where  
+
+@grd1:x ∈   staff 
+
+@grd2:x ∈   activeUser 
+
+@grd3:n ∈   citizen 
+
+@grd4:c ∈   vaccineCentre 
+
+@grd5:b ∈   batchNumber 
+
+@grd6:d ∈   DATE 
+
+then 
+
+@act1:stockInCentre ≔ stockInCentre ∖   {b} 
+
+@act2:receivedCertificates ≔ receivedCertificates ∪ {d ↦ b} 
+
+end 
+
+event checkCitizenDetails 
+
+any x n c 
+
+where  
+
+@grd1:x ∉ citizen 
+
+@grd2:x ∈   activeUser 
+
+@grd3:n ∈   NHSNumbers 
+
+then 
+
+@act1:c ≔ n → citizen 
+
+end 
+
+event checkBooking 
+
+any n b 
+where  
+@grd1:n ∈   BOOKINGS 
+then 
+
+@act1:b ≔ n 
+
+end 
+	end
